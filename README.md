@@ -1,494 +1,291 @@
-# body-parser
+# BSON parser
 
-[![NPM Version][npm-version-image]][npm-url]
-[![NPM Downloads][npm-downloads-image]][npm-url]
-[![Build Status][ci-image]][ci-url]
-[![Test Coverage][coveralls-image]][coveralls-url]
-[![OpenSSF Scorecard Badge][ossf-scorecard-badge]][ossf-scorecard-visualizer]
+BSON is short for "Binary JSON," and is the binary-encoded serialization of JSON-like documents.
+You can learn more about it in [the specification](http://bsonspec.org).
 
-Node.js body parsing middleware.
+### Table of Contents
 
-Parse incoming request bodies in a middleware before your handlers, available
-under the `req.body` property.
+- [Usage](#usage)
+- [Bugs/Feature Requests](#bugs--feature-requests)
+- [Installation](#installation)
+- [Documentation](#documentation)
+- [FAQ](#faq)
 
-**Note** As `req.body`'s shape is based on user-controlled input, all
-properties and values in this object are untrusted and should be validated
-before trusting. For example, `req.body.foo.toString()` may fail in multiple
-ways, for example the `foo` property may not be there or may not be a string,
-and `toString` may not be a function and instead a string or other user input.
 
-[Learn about the anatomy of an HTTP transaction in Node.js](https://nodejs.org/en/learn/http/anatomy-of-an-http-transaction).
+### Release Integrity
 
-_This does not handle multipart bodies_, due to their complex and typically
-large nature. For multipart bodies, you may be interested in the following
-modules:
+Releases are created automatically and signed using the [Node team's GPG key](https://pgp.mongodb.com/node-driver.asc). This applies to the git tag as well as all release packages provided as part of a GitHub release. To verify the provided packages, download the key and import it using gpg:
 
-  * [busboy](https://www.npmjs.com/package/busboy#readme) and
-    [connect-busboy](https://www.npmjs.com/package/connect-busboy#readme)
-  * [multiparty](https://www.npmjs.com/package/multiparty#readme) and
-    [connect-multiparty](https://www.npmjs.com/package/connect-multiparty#readme)
-  * [formidable](https://www.npmjs.com/package/formidable#readme)
-  * [multer](https://www.npmjs.com/package/multer#readme)
+```shell
+gpg --import node-driver.asc
+```
 
-This module provides the following parsers:
+The GitHub release contains a detached signature file for the NPM package (named
+`bson-X.Y.Z.tgz.sig`).
 
-  * [JSON body parser](#bodyparserjsonoptions)
-  * [Raw body parser](#bodyparserrawoptions)
-  * [Text body parser](#bodyparsertextoptions)
-  * [URL-encoded form body parser](#bodyparserurlencodedoptions)
+The following command returns the link npm package. 
+```shell
+npm view bson@vX.Y.Z dist.tarball 
+```
 
-Other body parsers you might be interested in:
+Using the result of the above command, a `curl` command can return the official npm package for the release.
 
-- [body](https://www.npmjs.com/package/body#readme)
-- [co-body](https://www.npmjs.com/package/co-body#readme)
+To verify the integrity of the downloaded package, run the following command:
+```shell
+gpg --verify bson-X.Y.Z.tgz.sig bson-X.Y.Z.tgz
+```
+
+>[!Note]
+No verification is done when using npm to install the package. The contents of the Github tarball and npm's tarball are identical.
+
+## Bugs / Feature Requests
+
+Think you've found a bug? Want to see a new feature in `bson`? Please open a case in our issue management tool, JIRA:
+
+1. Create an account and login: [jira.mongodb.org](https://jira.mongodb.org)
+2. Navigate to the NODE project: [jira.mongodb.org/browse/NODE](https://jira.mongodb.org/browse/NODE)
+3. Click **Create Issue** - Please provide as much information as possible about the issue and how to reproduce it.
+
+Bug reports in JIRA for the NODE driver project are **public**.
+
+## Usage
+
+To build a new version perform the following operations:
+
+```
+npm install
+npm run build
+```
+
+### Node.js or Bundling Usage
+
+When using a bundler or Node.js you can import bson using the package name:
+
+```js
+import { BSON, EJSON, ObjectId } from 'bson';
+// or:
+// const { BSON, EJSON, ObjectId } = require('bson');
+
+const bytes = BSON.serialize({ _id: new ObjectId() });
+console.log(bytes);
+const doc = BSON.deserialize(bytes);
+console.log(EJSON.stringify(doc));
+// {"_id":{"$oid":"..."}}
+```
+
+### Browser Usage
+
+If you are working directly in the browser without a bundler please use the `.mjs` bundle like so:
+
+```html
+<script type="module">
+  import { BSON, EJSON, ObjectId } from './lib/bson.mjs';
+
+  const bytes = BSON.serialize({ _id: new ObjectId() });
+  console.log(bytes);
+  const doc = BSON.deserialize(bytes);
+  console.log(EJSON.stringify(doc));
+  // {"_id":{"$oid":"..."}}
+</script>
+```
 
 ## Installation
 
 ```sh
-$ npm install body-parser
+npm install bson
 ```
 
-## API
+### MongoDB Node.js Driver Version Compatibility
+
+Only the following version combinations with the [MongoDB Node.js Driver](https://github.com/mongodb/node-mongodb-native) are considered stable.
+
+|               | `bson@1.x` | `bson@4.x` | `bson@5.x` | `bson@6.x` | `bson@7.x` |
+| ------------- | ---------- | ---------- | ---------- | ---------- | ---------- |
+| `mongodb@7.x` | N/A        | N/A        | N/A        | N/A        | ✓          |
+| `mongodb@6.x` | N/A        | N/A        | N/A        | ✓          | N/A        |
+| `mongodb@5.x` | N/A        | N/A        | ✓          | N/A        | N/A        |
+| `mongodb@4.x` | N/A        | ✓          | N/A        | N/A        | N/A        |
+| `mongodb@3.x` | ✓          | N/A        | N/A        | N/A        | N/A        |
+
+## Documentation
+
+### BSON
+
+[API documentation](https://mongodb.github.io/node-mongodb-native/Next/modules/BSON.html)
+
+<a name="EJSON"></a>
+
+### EJSON
+
+- [EJSON](#EJSON)
+
+  - [.parse(text, [options])](#EJSON.parse)
+
+  - [.stringify(value, [replacer], [space], [options])](#EJSON.stringify)
+
+  - [.serialize(bson, [options])](#EJSON.serialize)
+
+  - [.deserialize(ejson, [options])](#EJSON.deserialize)
+
+<a name="EJSON.parse"></a>
+
+#### _EJSON_.parse(text, [options])
+
+| Param             | Type                 | Default           | Description                                                                        |
+| ----------------- | -------------------- | ----------------- | ---------------------------------------------------------------------------------- |
+| text              | <code>string</code>  |                   |                                                                                    |
+| [options]         | <code>object</code>  |                   | Optional settings                                                                  |
+| [options.relaxed] | <code>boolean</code> | <code>true</code> | Attempt to return native JS types where possible, rather than BSON types (if true) |
+
+Parse an Extended JSON string, constructing the JavaScript value or object described by that
+string.
+
+**Example**
 
 ```js
-const bodyParser = require('body-parser')
+const { EJSON } = require('bson');
+const text = '{ "int32": { "$numberInt": "10" } }';
+
+// prints { int32: { [String: '10'] _bsontype: 'Int32', value: '10' } }
+console.log(EJSON.parse(text, { relaxed: false }));
+
+// prints { int32: 10 }
+console.log(EJSON.parse(text));
 ```
 
-The `bodyParser` object exposes various factories to create middlewares. All
-middlewares will populate the `req.body` property with the parsed body when
-the `Content-Type` request header matches the `type` option.
-
-The various errors returned by this module are described in the
-[errors section](#errors).
-
-### bodyParser.json([options])
-
-Returns middleware that only parses `json` and only looks at requests where
-the `Content-Type` header matches the `type` option. This parser accepts any
-Unicode encoding of the body and supports automatic inflation of `gzip`,
-`br` (brotli) and `deflate` encodings.
-
-A new `body` object containing the parsed data is populated on the `request`
-object after the middleware (i.e. `req.body`).
-
-#### Options
-
-The `json` function takes an optional `options` object that may contain any of
-the following keys:
-
-##### defaultCharset
-
-Specify the default character set for the json content if the charset is not
-specified in the `Content-Type` header of the request. Defaults to `utf-8`.
-
-##### inflate
-
-When set to `true`, then deflated (compressed) bodies will be inflated; when
-`false`, deflated bodies are rejected. Defaults to `true`.
-
-##### limit
-
-Controls the maximum request body size. If this is a number, then the value
-specifies the number of bytes; if it is a string, the value is passed to the
-[bytes](https://www.npmjs.com/package/bytes) library for parsing. Defaults
-to `'100kb'`.
-
-##### reviver
-
-The `reviver` option is passed directly to `JSON.parse` as the second
-argument. You can find more information on this argument
-[in the MDN documentation about JSON.parse](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#Example.3A_Using_the_reviver_parameter).
-
-##### strict
-
-When set to `true`, will only accept arrays and objects; when `false` will
-accept anything `JSON.parse` accepts. Defaults to `true`.
-
-##### type
-
-The `type` option is used to determine what media type the middleware will
-parse. This option can be a string, array of strings, or a function. If not a
-function, `type` option is passed directly to the
-[type-is](https://www.npmjs.com/package/type-is#readme) library and this can
-be an extension name (like `json`), a mime type (like `application/json`), or
-a mime type with a wildcard (like `*/*` or `*/json`). If a function, the `type`
-option is called as `fn(req)` and the request is parsed if it returns a truthy
-value. Defaults to `application/json`.
-
-##### verify
-
-The `verify` option, if supplied, is called as `verify(req, res, buf, encoding)`,
-where `buf` is a `Buffer` of the raw request body and `encoding` is the
-encoding of the request. The parsing can be aborted by throwing an error.
-
-### bodyParser.raw([options])
-
-Returns middleware that parses all bodies as a `Buffer` and only looks at
-requests where the `Content-Type` header matches the `type` option. This
-parser supports automatic inflation of `gzip`, `br` (brotli) and `deflate`
-encodings.
-
-A new `body` object containing the parsed data is populated on the `request`
-object after the middleware (i.e. `req.body`). This will be a `Buffer` object
-of the body.
-
-#### Options
-
-The `raw` function takes an optional `options` object that may contain any of
-the following keys:
-
-##### inflate
-
-When set to `true`, then deflated (compressed) bodies will be inflated; when
-`false`, deflated bodies are rejected. Defaults to `true`.
-
-##### limit
-
-Controls the maximum request body size. If this is a number, then the value
-specifies the number of bytes; if it is a string, the value is passed to the
-[bytes](https://www.npmjs.com/package/bytes) library for parsing. Defaults
-to `'100kb'`.
-
-##### type
-
-The `type` option is used to determine what media type the middleware will
-parse. This option can be a string, array of strings, or a function.
-If not a function, `type` option is passed directly to the
-[type-is](https://www.npmjs.com/package/type-is#readme) library and this
-can be an extension name (like `bin`), a mime type (like
-`application/octet-stream`), or a mime type with a wildcard (like `*/*` or
-`application/*`). If a function, the `type` option is called as `fn(req)`
-and the request is parsed if it returns a truthy value. Defaults to
-`application/octet-stream`.
-
-##### verify
-
-The `verify` option, if supplied, is called as `verify(req, res, buf, encoding)`,
-where `buf` is a `Buffer` of the raw request body and `encoding` is the
-encoding of the request. The parsing can be aborted by throwing an error.
-
-### bodyParser.text([options])
-
-Returns middleware that parses all bodies as a string and only looks at
-requests where the `Content-Type` header matches the `type` option. This
-parser supports automatic inflation of `gzip`, `br` (brotli) and `deflate`
-encodings.
-
-A new `body` string containing the parsed data is populated on the `request`
-object after the middleware (i.e. `req.body`). This will be a string of the
-body.
-
-#### Options
-
-The `text` function takes an optional `options` object that may contain any of
-the following keys:
-
-##### defaultCharset
-
-Specify the default character set for the text content if the charset is not
-specified in the `Content-Type` header of the request. Defaults to `utf-8`.
-
-##### inflate
-
-When set to `true`, then deflated (compressed) bodies will be inflated; when
-`false`, deflated bodies are rejected. Defaults to `true`.
-
-##### limit
-
-Controls the maximum request body size. If this is a number, then the value
-specifies the number of bytes; if it is a string, the value is passed to the
-[bytes](https://www.npmjs.com/package/bytes) library for parsing. Defaults
-to `'100kb'`.
-
-##### type
-
-The `type` option is used to determine what media type the middleware will
-parse. This option can be a string, array of strings, or a function. If not
-a function, `type` option is passed directly to the
-[type-is](https://www.npmjs.com/package/type-is#readme) library and this can
-be an extension name (like `txt`), a mime type (like `text/plain`), or a mime
-type with a wildcard (like `*/*` or `text/*`). If a function, the `type`
-option is called as `fn(req)` and the request is parsed if it returns a
-truthy value. Defaults to `text/plain`.
-
-##### verify
-
-The `verify` option, if supplied, is called as `verify(req, res, buf, encoding)`,
-where `buf` is a `Buffer` of the raw request body and `encoding` is the
-encoding of the request. The parsing can be aborted by throwing an error.
-
-### bodyParser.urlencoded([options])
-
-Returns middleware that only parses `urlencoded` bodies and only looks at
-requests where the `Content-Type` header matches the `type` option. This
-parser accepts only UTF-8 and ISO-8859-1 encodings of the body and supports 
-automatic inflation of `gzip`, `br` (brotli) and `deflate` encodings.
-
-A new `body` object containing the parsed data is populated on the `request`
-object after the middleware (i.e. `req.body`). This object will contain
-key-value pairs, where the value can be a string or array (when `extended` is
-`false`), or any type (when `extended` is `true`).
-
-#### Options
-
-The `urlencoded` function takes an optional `options` object that may contain
-any of the following keys:
-
-##### extended
-
-The "extended" syntax allows for rich objects and arrays to be encoded into the
-URL-encoded format, allowing for a JSON-like experience with URL-encoded. For
-more information, please [see the qs
-library](https://www.npmjs.com/package/qs#readme).
-
-Defaults to `false`.
-
-##### inflate
-
-When set to `true`, then deflated (compressed) bodies will be inflated; when
-`false`, deflated bodies are rejected. Defaults to `true`.
-
-##### limit
-
-Controls the maximum request body size. If this is a number, then the value
-specifies the number of bytes; if it is a string, the value is passed to the
-[bytes](https://www.npmjs.com/package/bytes) library for parsing. Defaults
-to `'100kb'`.
-
-##### parameterLimit
-
-The `parameterLimit` option controls the maximum number of parameters that
-are allowed in the URL-encoded data. If a request contains more parameters
-than this value, a 413 will be returned to the client. Defaults to `1000`.
-
-##### type
-
-The `type` option is used to determine what media type the middleware will
-parse. This option can be a string, array of strings, or a function. If not
-a function, `type` option is passed directly to the
-[type-is](https://www.npmjs.com/package/type-is#readme) library and this can
-be an extension name (like `urlencoded`), a mime type (like
-`application/x-www-form-urlencoded`), or a mime type with a wildcard (like
-`*/x-www-form-urlencoded`). If a function, the `type` option is called as
-`fn(req)` and the request is parsed if it returns a truthy value. Defaults
-to `application/x-www-form-urlencoded`.
-
-##### verify
-
-The `verify` option, if supplied, is called as `verify(req, res, buf, encoding)`,
-where `buf` is a `Buffer` of the raw request body and `encoding` is the
-encoding of the request. The parsing can be aborted by throwing an error.
-
-##### defaultCharset
-
-The default charset to parse as, if not specified in content-type. Must be
-either `utf-8` or `iso-8859-1`. Defaults to `utf-8`.
-
-##### charsetSentinel
-
-Whether to let the value of the `utf8` parameter take precedence as the charset
-selector. It requires the form to contain a parameter named `utf8` with a value
-of `✓`. Defaults to `false`.
-
-##### interpretNumericEntities
-
-Whether to decode numeric entities such as `&#9786;` when parsing an iso-8859-1
-form. Defaults to `false`.
-
-
-##### depth
-
-The `depth` option is used to configure the maximum depth of the `qs` library when `extended` is `true`. This allows you to limit the amount of keys that are parsed and can be useful to prevent certain types of abuse. Defaults to `32`. It is recommended to keep this value as low as possible.
-
-## Errors
-
-The middlewares provided by this module create errors using the
-[`http-errors` module](https://www.npmjs.com/package/http-errors). The errors
-will typically have a `status`/`statusCode` property that contains the suggested
-HTTP response code, an `expose` property to determine if the `message` property
-should be displayed to the client, a `type` property to determine the type of
-error without matching against the `message`, and a `body` property containing
-the read body, if available.
-
-The following are the common errors created, though any error can come through
-for various reasons.
-
-### content encoding unsupported
-
-This error will occur when the request had a `Content-Encoding` header that
-contained an encoding but the "inflation" option was set to `false`. The
-`status` property is set to `415`, the `type` property is set to
-`'encoding.unsupported'`, and the `charset` property will be set to the
-encoding that is unsupported.
-
-### entity parse failed
-
-This error will occur when the request contained an entity that could not be
-parsed by the middleware. The `status` property is set to `400`, the `type`
-property is set to `'entity.parse.failed'`, and the `body` property is set to
-the entity value that failed parsing.
-
-### entity verify failed
-
-This error will occur when the request contained an entity that could not be
-failed verification by the defined `verify` option. The `status` property is
-set to `403`, the `type` property is set to `'entity.verify.failed'`, and the
-`body` property is set to the entity value that failed verification.
-
-### request aborted
-
-This error will occur when the request is aborted by the client before reading
-the body has finished. The `received` property will be set to the number of
-bytes received before the request was aborted and the `expected` property is
-set to the number of expected bytes. The `status` property is set to `400`
-and `type` property is set to `'request.aborted'`.
-
-### request entity too large
-
-This error will occur when the request body's size is larger than the "limit"
-option. The `limit` property will be set to the byte limit and the `length`
-property will be set to the request body's length. The `status` property is
-set to `413` and the `type` property is set to `'entity.too.large'`.
-
-### request size did not match content length
-
-This error will occur when the request's length did not match the length from
-the `Content-Length` header. This typically occurs when the request is malformed,
-typically when the `Content-Length` header was calculated based on characters
-instead of bytes. The `status` property is set to `400` and the `type` property
-is set to `'request.size.invalid'`.
-
-### stream encoding should not be set
-
-This error will occur when something called the `req.setEncoding` method prior
-to this middleware. This module operates directly on bytes only and you cannot
-call `req.setEncoding` when using this module. The `status` property is set to
-`500` and the `type` property is set to `'stream.encoding.set'`.
-
-### stream is not readable
-
-This error will occur when the request is no longer readable when this middleware
-attempts to read it. This typically means something other than a middleware from
-this module read the request body already and the middleware was also configured to
-read the same request. The `status` property is set to `500` and the `type`
-property is set to `'stream.not.readable'`.
-
-### too many parameters
-
-This error will occur when the content of the request exceeds the configured
-`parameterLimit` for the `urlencoded` parser. The `status` property is set to
-`413` and the `type` property is set to `'parameters.too.many'`.
-
-### unsupported charset "BOGUS"
-
-This error will occur when the request had a charset parameter in the
-`Content-Type` header, but the `iconv-lite` module does not support it OR the
-parser does not support it. The charset is contained in the message as well
-as in the `charset` property. The `status` property is set to `415`, the
-`type` property is set to `'charset.unsupported'`, and the `charset` property
-is set to the charset that is unsupported.
-
-### unsupported content encoding "bogus"
-
-This error will occur when the request had a `Content-Encoding` header that
-contained an unsupported encoding. The encoding is contained in the message
-as well as in the `encoding` property. The `status` property is set to `415`,
-the `type` property is set to `'encoding.unsupported'`, and the `encoding`
-property is set to the encoding that is unsupported.
-
-### The input exceeded the depth
-
-This error occurs when using `bodyParser.urlencoded` with the `extended` property set to `true` and the input exceeds the configured `depth` option. The `status` property is set to `400`. It is recommended to review the `depth` option and evaluate if it requires a higher value. When the `depth` option is set to `32` (default value), the error will not be thrown.
-
-## Examples
-
-### Express/Connect top-level generic
-
-This example demonstrates adding a generic JSON and URL-encoded parser as a
-top-level middleware, which will parse the bodies of all incoming requests.
-This is the simplest setup.
+<a name="EJSON.stringify"></a>
+
+#### _EJSON_.stringify(value, [replacer], [space], [options])
+
+| Param             | Type                                        | Default           | Description                                                                                                                                                                                                                                                                                                                                        |
+| ----------------- | ------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| value             | <code>object</code>                         |                   | The value to convert to extended JSON                                                                                                                                                                                                                                                                                                              |
+| [replacer]        | <code>function</code> \| <code>array</code> |                   | A function that alters the behavior of the stringification process, or an array of String and Number objects that serve as a whitelist for selecting/filtering the properties of the value object to be included in the JSON string. If this value is null or not provided, all properties of the object are included in the resulting JSON string |
+| [space]           | <code>string</code> \| <code>number</code>  |                   | A String or Number object that's used to insert white space into the output JSON string for readability purposes.                                                                                                                                                                                                                                  |
+| [options]         | <code>object</code>                         |                   | Optional settings                                                                                                                                                                                                                                                                                                                                  |
+| [options.relaxed] | <code>boolean</code>                        | <code>true</code> | Enabled Extended JSON's `relaxed` mode                                                                                                                                                                                                                                                                                                             |
+| [options.legacy]  | <code>boolean</code>                        | <code>true</code> | Output in Extended JSON v1                                                                                                                                                                                                                                                                                                                         |
+
+Converts a BSON document to an Extended JSON string, optionally replacing values if a replacer
+function is specified or optionally including only the specified properties if a replacer array
+is specified.
+
+**Example**
 
 ```js
-const express = require('express')
-const bodyParser = require('body-parser')
+const { EJSON } = require('bson');
+const Int32 = require('mongodb').Int32;
+const doc = { int32: new Int32(10) };
 
-const app = express()
+// prints '{"int32":{"$numberInt":"10"}}'
+console.log(EJSON.stringify(doc, { relaxed: false }));
 
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded())
-
-// parse application/json
-app.use(bodyParser.json())
-
-app.use(function (req, res) {
-  res.setHeader('Content-Type', 'text/plain')
-  res.write('you posted:\n')
-  res.end(String(JSON.stringify(req.body, null, 2)))
-})
+// prints '{"int32":10}'
+console.log(EJSON.stringify(doc));
 ```
 
-### Express route-specific
+<a name="EJSON.serialize"></a>
 
-This example demonstrates adding body parsers specifically to the routes that
-need them. In general, this is the most recommended way to use body-parser with
-Express.
+#### _EJSON_.serialize(bson, [options])
 
-```js
-const express = require('express')
-const bodyParser = require('body-parser')
+| Param     | Type                | Description                                          |
+| --------- | ------------------- | ---------------------------------------------------- |
+| bson      | <code>object</code> | The object to serialize                              |
+| [options] | <code>object</code> | Optional settings passed to the `stringify` function |
 
-const app = express()
+Serializes an object to an Extended JSON string, and reparse it as a JavaScript object.
 
-// create application/json parser
-const jsonParser = bodyParser.json()
+<a name="EJSON.deserialize"></a>
 
-// create application/x-www-form-urlencoded parser
-const urlencodedParser = bodyParser.urlencoded()
+#### _EJSON_.deserialize(ejson, [options])
 
-// POST /login gets urlencoded bodies
-app.post('/login', urlencodedParser, function (req, res) {
-  if (!req.body || !req.body.username) res.sendStatus(400)
-  res.send('welcome, ' + req.body.username)
-})
+| Param     | Type                | Description                                  |
+| --------- | ------------------- | -------------------------------------------- |
+| ejson     | <code>object</code> | The Extended JSON object to deserialize      |
+| [options] | <code>object</code> | Optional settings passed to the parse method |
 
-// POST /api/users gets JSON bodies
-app.post('/api/users', jsonParser, function (req, res) {
-  if (!req.body) res.sendStatus(400)
-  // create user in req.body
-})
+Deserializes an Extended JSON object into a plain JavaScript object with native/BSON types
+
+## Error Handling
+
+It is our recommendation to use `BSONError.isBSONError()` checks on errors and to avoid relying on parsing `error.message` and `error.name` strings in your code. We guarantee `BSONError.isBSONError()` checks will pass according to semver guidelines, but errors may be sub-classed or their messages may change at any time, even patch releases, as we see fit to increase the helpfulness of the errors.
+
+Any new errors we add to the driver will directly extend an existing error class and no existing error will be moved to a different parent class outside of a major release.
+This means `BSONError.isBSONError()` will always be able to accurately capture the errors that our BSON library throws.
+
+Hypothetical example: A collection in our Db has an issue with UTF-8 data:
+
+```ts
+let documentCount = 0;
+const cursor = collection.find({}, { utf8Validation: true });
+try {
+  for await (const doc of cursor) documentCount += 1;
+} catch (error) {
+  if (BSONError.isBSONError(error)) {
+    console.log(`Found the troublemaker UTF-8!: ${documentCount} ${error.message}`);
+    return documentCount;
+  }
+  throw error;
+}
 ```
 
-### Change accepted type for parsers
+## React Native
 
-All the parsers accept a `type` option which allows you to change the
-`Content-Type` that the middleware will parse.
+js-bson requires the `atob`, `btoa` and `TextEncoder` globals.  Older versions of React Native did not support these global objects, and so 
+[js-bson v5.4.0](https://github.com/mongodb/js-bson/releases/tag/v5.4.0) added support for bundled polyfills for these globals.  Newer versions
+of Hermes includes these globals, and so the polyfills for are no longer needed in the js-bson package.
 
-```js
-const express = require('express')
-const bodyParser = require('body-parser')
+If you find yourself on a version of React Native that does not have these globals, either:
 
-const app = express()
+1. polyfill them yourself
+2. upgrade to a later version of hermes
+3. use a version of js-bson `>=5.4.0` and `<7.0.0`
 
-// parse various different custom JSON types as JSON
-app.use(bodyParser.json({ type: 'application/*+json' }))
+One additional polyfill, `crypto.getRandomValues` is recommended and can be installed with the following command:
 
-// parse some custom thing into a Buffer
-app.use(bodyParser.raw({ type: 'application/vnd.custom-type' }))
-
-// parse an HTML body into a string
-app.use(bodyParser.text({ type: 'text/html' }))
+```sh
+npm install --save react-native-get-random-values
 ```
 
-## License
+The following snippet should be placed at the top of the entrypoint (by default this is the root `index.js` file) for React Native projects using the BSON library. These lines must be placed for any code that imports `BSON`.
 
-[MIT](LICENSE)
+```typescript
+// Required Polyfills For ReactNative
+import 'react-native-get-random-values';
+```
 
-[ci-image]: https://img.shields.io/github/actions/workflow/status/expressjs/body-parser/ci.yml?branch=master&label=ci
-[ci-url]: https://github.com/expressjs/body-parser/actions/workflows/ci.yml
-[coveralls-image]: https://img.shields.io/coverallsCoverage/github/expressjs/body-parser?branch=master
-[coveralls-url]: https://coveralls.io/r/expressjs/body-parser?branch=master
-[npm-downloads-image]: https://img.shields.io/npm/dm/body-parser
-[npm-url]: https://npmjs.com/package/body-parser
-[npm-version-image]: https://img.shields.io/npm/v/body-parser
-[ossf-scorecard-badge]: https://api.scorecard.dev/projects/github.com/expressjs/body-parser/badge
-[ossf-scorecard-visualizer]: https://ossf.github.io/scorecard-visualizer/#/projects/github.com/expressjs/body-parser
+Finally, import the `BSON` library like so:
+
+```typescript
+import { BSON, EJSON } from 'bson';
+```
+
+This will cause React Native to import the `node_modules/bson/lib/bson.rn.cjs` bundle (see the `"react-native"` setting we have in the `"exports"` section of our [package.json](./package.json).)
+
+### Technical Note about React Native module import
+
+The `"exports"` definition in our `package.json` will result in BSON's CommonJS bundle being imported in a React Native project instead of the ES module bundle. Importing the CommonJS bundle is necessary because BSON's ES module bundle of BSON uses top-level await, which is not supported syntax in [React Native's runtime hermes](https://hermesengine.dev/).
+
+## FAQ
+
+#### Why does `undefined` get converted to `null`?
+
+The `undefined` BSON type has been [deprecated for many years](http://bsonspec.org/spec.html), so this library has dropped support for it. Use the `ignoreUndefined` option (for example, from the [driver](http://mongodb.github.io/node-mongodb-native/2.2/api/MongoClient.html#connect) ) to instead remove `undefined` keys.
+
+#### How do I add custom serialization logic?
+
+This library looks for `toBSON()` functions on every path, and calls the `toBSON()` function to get the value to serialize.
+
+```javascript
+const BSON = require('bson');
+
+class CustomSerialize {
+  toBSON() {
+    return 42;
+  }
+}
+
+const obj = { answer: new CustomSerialize() };
+// "{ answer: 42 }"
+console.log(BSON.deserialize(BSON.serialize(obj)));
+```
