@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
-
+// import all_product from "../Components/Assets/all_product";
 
 export const ShopContext = createContext(null);
 
@@ -14,8 +14,11 @@ const getDefaultCart = ()=>{
 
 const ShopContextProvider = (props)=>{
 
-    const [all_product,setAll_Product] = useState([]);
+    
+
     const [cartItems,setCartItems] = useState(getDefaultCart());
+    const [all_product,setAll_Product] = useState([]);
+    
 
     useEffect(()=>{
         fetch('http://localhost:4000/allproducts')
@@ -77,7 +80,7 @@ const ShopContextProvider = (props)=>{
         {
             if(cartItems[item]>0)
             {
-                let itemInfo = all_product.find((product)=>product._id===Number(item))
+                let itemInfo = all_product.find((product)=>product.id===Number(item))
                 totalAmount += itemInfo.new_price * cartItems[item];
             }
         } 
@@ -96,8 +99,8 @@ const ShopContextProvider = (props)=>{
         return totalItem;
     }
 
-    const contextValue = {all_product,cartItems,addToCart,removeFromCart,getTotalCartAmount,getTotalCartItems};
-
+    const contextValue = {getTotalCartItems,getTotalCartAmount,all_product,cartItems,addToCart,removeFromCart};
+    
     return (
         <ShopContext.Provider value={contextValue}>
             {props.children}
